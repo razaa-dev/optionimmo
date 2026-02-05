@@ -180,6 +180,49 @@ router.post('/', upload.array('photos', 10), async (req, res) => {
       await pool.execute('UPDATE contacts SET email_sent = TRUE WHERE id = ?', [contactId]);
 
       console.log('Email sent successfully to admin');
+
+      // Send confirmation email to the user
+      const userMailOptions = {
+        from: `"Option Immo" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: `Confirmation de votre demande - Option Immo`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #1e293b; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: #ffffff; margin: 0;">Merci, ${first_name} !</h1>
+            </div>
+            <div style="background-color: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px;">
+              <p style="color: #475569;">Nous avons bien reçu votre demande concernant votre <strong>${assetTypeLabel}</strong> à <strong>${asset_location}</strong>.</p>
+
+              <h2 style="color: #1e293b;">Résumé de votre demande</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 10px 0; color: #64748b; border-bottom: 1px solid #e2e8f0;">Type de bien</td>
+                  <td style="padding: 10px 0; color: #1e293b; font-weight: bold; border-bottom: 1px solid #e2e8f0;">${assetTypeLabel}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #64748b; border-bottom: 1px solid #e2e8f0;">Localisation</td>
+                  <td style="padding: 10px 0; color: #1e293b; font-weight: bold; border-bottom: 1px solid #e2e8f0;">${asset_location}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #64748b; border-bottom: 1px solid #e2e8f0;">Valeur estimée</td>
+                  <td style="padding: 10px 0; color: #1e293b; font-weight: bold; border-bottom: 1px solid #e2e8f0;">${asset_value}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #64748b;">Délai souhaité</td>
+                  <td style="padding: 10px 0; color: #1e293b; font-weight: bold;">${deadline}</td>
+                </tr>
+              </table>
+
+              <p style="color: #475569;">Notre équipe va reprendre contact avec vous très prochainement.</p>
+              <p style="color: #64748b; font-size: 12px;">Référence de votre demande : #${contactId}</p>
+            </div>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(userMailOptions);
+      console.log('Confirmation email sent to user:', email);
     } catch (emailError) {
       console.error('Error sending email:', emailError);
       // Don't fail the request if email fails - data is already saved
