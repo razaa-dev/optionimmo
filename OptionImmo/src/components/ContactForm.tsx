@@ -81,7 +81,7 @@ export default function ContactForm() {
 
       const apiUrl = import.meta.env.VITE_API_URL || '';
 
-      const response = await fetch(`${apiUrl}/api/contact`, {
+      const response = await fetch(`${apiUrl}/contact`, {
         method: 'POST',
         body: formDataToSend
       });
